@@ -48,6 +48,25 @@ async def fetch_channel_version(client: httpx.AsyncClient, channel: str) -> str:
     except (httpx.RequestError, httpx.HTTPStatusError, json.JSONDecodeError, KeyError, IndexError) as e:
         app.logger.error(f"Channel API error for {channel}: {e}")
         return "upstream server issue"
+
+async def fetch_dockerhub_tags(client: httpx.AsyncClient, repo: str) -> str:
+    """Fetch the latest tag from Docker Hub for a given repository, excluding tags containing 'ea' and 'dev' and only including tags starting with '25'."""
+    url = f"https://hub.docker.com/v2/repositories/{repo}/tags"
+    try:
+        resp = await client.get(url, timeout=10)
+        resp.raise_for_status()
+        data = resp.json()
+        # Filter tags: must start with '25' and not contain 'ea'
+        if data.get('results') and len(data['results']) > 0:
+            for tag in data['results']:
+                tag_name = tag.get('name', '')
+                if tag_name and tag_name.startswith('25') and 'ea' and 'dev' not in tag_name.lower():
+                    return tag_name
+            return "no valid tags found"
+        return "no tags found"
+    except (httpx.RequestError, httpx.HTTPStatusError, json.JSONDecodeError, KeyError, IndexError) as e:
+        app.logger.error(f"Docker Hub API error for {repo}: {e}")
+        return "error fetching tags"
         
 # ----------------------------
 # Version Aggregation
@@ -63,14 +82,20 @@ async def get_versions_async() -> Dict[str, str]:
         "cert-manager": ("github", "cert-manager/cert-manager"),
         "harvester": ("github", "harvester/harvester"),
         "hauler": ("github", "hauler-dev/hauler"),
+        "portworx": ("dockerhub", "portworx/px-pure-csi-driver"),
+        "px_oper": ("dockerhub", "portworx/px-operator"),
     }
 
     async with httpx.AsyncClient(headers=HEADERS) as client:
-        tasks = [
-            fetch_github_release(client, identifier) if source_type == "github"
-            else fetch_channel_version(client, identifier)
-            for _, (source_type, identifier) in sources.items()
-        ]
+        tasks = []
+        for _, (source_type, identifier) in sources.items():
+            if source_type == "github":
+                tasks.append(fetch_github_release(client, identifier))
+            elif source_type == "channel":
+                tasks.append(fetch_channel_version(client, identifier))
+            elif source_type == "dockerhub":
+                tasks.append(fetch_dockerhub_tags(client, identifier))
+        
         results = await asyncio.gather(*tasks)
 
     return dict(zip(sources.keys(), results))
@@ -111,6 +136,8 @@ def curl_all_the_things():
         "cert_ver": version_cache.get("cert-manager", "loading..."),
         "harv_ver": version_cache.get("harvester", "loading..."),
         "hauler_ver": version_cache.get("hauler", "loading..."),
+        "portworx_ver": version_cache.get("portworx", "loading..."),
+        "px_oper_ver": version_cache.get("px_oper", "loading..."),
     })
 
 # ----------------------------

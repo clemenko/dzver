@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Latest Rancher Stack Versions</title>
+    <title>Latest Rancher and Pure/Portworx Versions</title>
     <link rel="stylesheet" href="/static/bootstrap.min.css">
     <link rel="shortcut icon" href="/static/favicon.ico">
 </head>
 <body>
   <center>
     <br>
-   <h2>Latest Rancher Stack Versions</h2>
+   <h2>Latest Rancher and Pure/Portworx Versions</h2>
     <div class="container mt-5">
       <table class="table table-striped w-auto">
         <tbody>
@@ -29,10 +29,6 @@
             <td><a href="https://github.com/longhorn/longhorn/releases/tag/{{longhorn_ver}}" target="new">{{longhorn_ver}}</a></td>
           </tr>
           <tr>
-            <td><a href="https://github.com/neuvector/neuvector">NeuVector</a></td>
-            <td><a href="https://github.com/neuvector/neuvector/releases/tag/{{neu_ver}}" target="new">{{neu_ver}}</a></td>
-          </tr>
-          <tr>
             <td><a href="https://github.com/harvester/harvester">Harvester</a></td>
             <td><a href="https://github.com/harvester/harvester/releases/tag/{{harv_ver}}" target="new">{{harv_ver}}</a></td>
           </tr>
@@ -44,11 +40,19 @@
             <td><a href="https://github.com/cert-manager/cert-manager">Cert-Manager</a></td>
             <td><a href="https://github.com/cert-manager/cert-manager/releases/tag/{{cert_ver}}" target="new">{{cert_ver}}</a></td>
           </tr>
+          <tr>
+            <td><a href="https://hub.docker.com/r/portworx/px-pure-csi-driver">Portworx PX-CSI</a></td>
+            <td><a href="https://hub.docker.com/layers/portworx/px-pure-csi-driver/{{portworx_ver}}" target="new">{{portworx_ver}}</a></td>
+          </tr>
+          <tr>
+            <td><a href="https://hub.docker.com/r/portworx/px-operator">Portworx PX-Operator</a></td>
+            <td><a href="https://hub.docker.com/layers/portworx/px-operator/{{px_oper_ver}}" target="new">{{px_oper_ver}}</a></td>
+          </tr>
         </tbody>
       </table>
       json : <a href="https://dzver.rfed.io/json">https://dzver.rfed.io/json</a><br><br>
 
-      source : <a href="https://github.com/clemenko/rancher_version" target="new">https://github.com/clemenko/rancher_version</a><br>
+      source : <a href="https://github.com/clemenko/rancher_version" target="new">https://github.com/clemenko/dzver</a><br>
       youtubes : <a href="https://www.youtube.com/@clemenko/videos" target="new">https://www.youtube.com/@clemenko/videos</a><br>
       <a href="mailto:clemenko@gmail.com" target="new">clemenko@gmail.com</a>
     </div>

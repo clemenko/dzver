@@ -12,6 +12,9 @@ docker run --rm -it --platform linux/amd64 -p 5000:5000 -e GITHUB_TOKEN="" cleme
 
 # on x86
 docker run --rm -it -p 5000:5000 -e GITHUB_TOKEN="" clemenko/dzver
+
+## mac testing
+docker run --rm -it --platform linux/amd64 -p 5000:5000 -e GITHUB_TOKEN="" -v $(pwd):/code python:alpine sh
 ```
 
 ## Compose
