@@ -76,8 +76,8 @@ async def get_versions_async() -> Dict[str, str]:
     """Fetch versions for all monitored applications in parallel."""
     sources = {
         "rancher": ("github", "rancher/rancher"),
-        "rke2 stable": ("channel", "rke2"),
-        "k3s stable": ("channel", "k3s"),
+        "rke2-stable": ("channel", "rke2"),
+        "k3s-stable": ("channel", "k3s"),
         "longhorn": ("github", "longhorn/longhorn"),
         "neuvector": ("github", "neuvector/neuvector"),
         "cert-manager": ("github", "cert-manager/cert-manager"),
@@ -136,8 +136,8 @@ def json_all_the_things():
 def curl_all_the_things():
     return render_template('index.html', **{
         "rancher_ver": version_cache.get("rancher", "loading..."),
-        "rke_ver": version_cache.get("rke2 stable", "loading..."),
-        "k3s_ver": version_cache.get("k3s stable", "loading..."),
+        "rke_ver": version_cache.get("rke2-stable", "loading..."),
+        "k3s_ver": version_cache.get("k3s-stable", "loading..."),
         "longhorn_ver": version_cache.get("longhorn", "loading..."),
         "neu_ver": version_cache.get("neuvector", "loading..."),
         "cert_ver": version_cache.get("cert-manager", "loading..."),
