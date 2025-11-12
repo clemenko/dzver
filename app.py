@@ -49,9 +49,10 @@ async def fetch_channel_version(client: httpx.AsyncClient, channel: str) -> str:
         app.logger.error(f"Channel API error for {channel}: {e}")
         return "upstream server issue"
 
-async def fetch_dockerhub_tags(client: httpx.AsyncClient, repo: str) -> str:
-    """Fetch the latest tag from Docker Hub for a given repository, excluding tags containing 'ea' and 'dev' and only including tags starting with '25'."""
-    url = f"https://hub.docker.com/v2/repositories/{repo}/tags"
+async def fetch_dockerhub_tags(client: httpx.AsyncClient, repo: str, name_filter: str = "version") -> str:
+    """Fetch the latest tag from Docker Hub for a given repository, excluding tags containing 'EA' or 'ppc'."""
+    url = f"https://hub.docker.com/v2/repositories/{repo}/tags?name={name_filter}"
+
     try:
         resp = await client.get(url, timeout=10)
         resp.raise_for_status()
@@ -60,7 +61,7 @@ async def fetch_dockerhub_tags(client: httpx.AsyncClient, repo: str) -> str:
         if data.get('results') and len(data['results']) > 0:
             for tag in data['results']:
                 tag_name = tag.get('name', '')
-                if tag_name and tag_name.startswith('25') and 'ea' and 'dev' not in tag_name.lower():
+                if tag_name and 'ppc' not in tag_name.lower() and 'dev' not in tag_name.lower() and 'ea' not in tag_name.lower():
                     return tag_name
             return "no valid tags found"
         return "no tags found"
@@ -82,19 +83,25 @@ async def get_versions_async() -> Dict[str, str]:
         "cert-manager": ("github", "cert-manager/cert-manager"),
         "harvester": ("github", "harvester/harvester"),
         "hauler": ("github", "hauler-dev/hauler"),
-        "portworx": ("dockerhub", "portworx/px-pure-csi-driver"),
-        "px_oper": ("dockerhub", "portworx/px-operator"),
+        "portworx": ("dockerhub", "portworx/px-pure-csi-driver", {"name_filter": "25"}),
+        "px_oper": ("dockerhub", "portworx/px-operator", {"name_filter": "25"}),
+        "stork": ("dockerhub", "openstorage/stork", {"name_filter": "25"}),
+        "pxenterprise": ("dockerhub", "portworx/px-enterprise", {"name_filter": "3.4"}),
     }
 
     async with httpx.AsyncClient(headers=HEADERS) as client:
         tasks = []
-        for _, (source_type, identifier) in sources.items():
+        for _, source_data in sources.items():
+            source_type = source_data[0]
+            identifier = source_data[1]
+            options = source_data[2] if len(source_data) > 2 else {}
+            
             if source_type == "github":
                 tasks.append(fetch_github_release(client, identifier))
             elif source_type == "channel":
                 tasks.append(fetch_channel_version(client, identifier))
             elif source_type == "dockerhub":
-                tasks.append(fetch_dockerhub_tags(client, identifier))
+                tasks.append(fetch_dockerhub_tags(client, identifier, **options))
         
         results = await asyncio.gather(*tasks)
 
@@ -137,7 +144,9 @@ def curl_all_the_things():
         "harv_ver": version_cache.get("harvester", "loading..."),
         "hauler_ver": version_cache.get("hauler", "loading..."),
         "portworx_ver": version_cache.get("portworx", "loading..."),
+        "pxe_ver": version_cache.get("pxenterprise", "loading..."),
         "px_oper_ver": version_cache.get("px_oper", "loading..."),
+        "stork_ver": version_cache.get("stork", "loading..."),
     })
 
 # ----------------------------
