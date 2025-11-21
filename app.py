@@ -61,7 +61,7 @@ async def fetch_dockerhub_tags(client: httpx.AsyncClient, repo: str, name_filter
         if data.get('results') and len(data['results']) > 0:
             for tag in data['results']:
                 tag_name = tag.get('name', '')
-                if tag_name and 'ppc' not in tag_name.lower() and 'dev' not in tag_name.lower() and 'ea' not in tag_name.lower():
+                if tag_name and 'ppc' not in tag_name.lower() and 'dev' not in tag_name.lower() and 'beta' not in tag_name.lower() and 'ea' not in tag_name.lower():
                     return tag_name
             return "no valid tags found"
         return "no tags found"
@@ -85,7 +85,7 @@ async def get_versions_async() -> Dict[str, str]:
         "portworx": ("dockerhub", "portworx/px-pure-csi-driver", {"name_filter": "25"}),
         "px_oper": ("dockerhub", "portworx/px-operator", {"name_filter": "25"}),
         "stork": ("dockerhub", "openstorage/stork", {"name_filter": "25"}),
-        "pxenterprise": ("dockerhub", "portworx/px-enterprise", {"name_filter": "3.4"}),
+        "pxenterprise": ("dockerhub", "portworx/px-enterprise", {"name_filter": "3"}),
     }
 
     async with httpx.AsyncClient(headers=HEADERS) as client:
