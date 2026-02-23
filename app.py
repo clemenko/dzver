@@ -69,7 +69,10 @@ async def fetch_dockerhub_tags(client: httpx.AsyncClient, repo: str, name_filter
             valid_tags = [
                 tag.get('name', '')
                 for tag in data['results']
-                if tag.get('name', '') and all(c in '0123456789.' for c in tag.get('name', ''))
+                if tag.get('name', '')
+                and '.' in tag.get('name', '')
+                and all(c in '0123456789.' for c in tag.get('name', ''))
+                and tag.get('name', '').startswith(name_filter)
             ]
             if valid_tags:
                 return max(valid_tags, key=parse_version)
