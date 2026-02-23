@@ -50,19 +50,30 @@ async def fetch_channel_version(client: httpx.AsyncClient, channel: str) -> str:
         return "upstream server issue"
 
 async def fetch_dockerhub_tags(client: httpx.AsyncClient, repo: str, name_filter: str = "version") -> str:
-    """Fetch the latest tag from Docker Hub for a given repository, excluding tags containing 'EA' or 'ppc'."""
-    url = f"https://hub.docker.com/v2/repositories/{repo}/tags?name={name_filter}"
+    """Fetch the highest version tag from Docker Hub for a given repository, excluding tags containing 'EA', 'ppc', 'dev', or 'beta'."""
+    url = f"https://hub.docker.com/v2/repositories/{repo}/tags?name={name_filter}&page_size=100"
+
+    def parse_version(tag_name: str) -> tuple:
+        """Parse a version string into a tuple of integers for comparison."""
+        parts = []
+        for part in tag_name.split('.'):
+            digits = ''.join(c for c in part if c.isdigit())
+            parts.append(int(digits) if digits else 0)
+        return tuple(parts)
 
     try:
         resp = await client.get(url, timeout=10)
         resp.raise_for_status()
         data = resp.json()
-        # Filter tags: must start with '25' and not contain 'ea'
         if data.get('results') and len(data['results']) > 0:
-            for tag in data['results']:
-                tag_name = tag.get('name', '')
-                if tag_name and 'ppc' not in tag_name.lower() and 'dev' not in tag_name.lower() and 'beta' not in tag_name.lower() and 'ea' not in tag_name.lower():
-                    return tag_name
+            excluded = {'ppc', 'dev', 'beta', 'ea'}
+            valid_tags = [
+                tag.get('name', '')
+                for tag in data['results']
+                if tag.get('name', '') and not any(ex in tag.get('name', '').lower() for ex in excluded)
+            ]
+            if valid_tags:
+                return max(valid_tags, key=parse_version)
             return "no valid tags found"
         return "no tags found"
     except (httpx.RequestError, httpx.HTTPStatusError, json.JSONDecodeError, KeyError, IndexError) as e:
