@@ -66,11 +66,10 @@ async def fetch_dockerhub_tags(client: httpx.AsyncClient, repo: str, name_filter
         resp.raise_for_status()
         data = resp.json()
         if data.get('results') and len(data['results']) > 0:
-            excluded = {'ppc', 'dev', 'beta', 'ea'}
             valid_tags = [
                 tag.get('name', '')
                 for tag in data['results']
-                if tag.get('name', '') and not any(ex in tag.get('name', '').lower() for ex in excluded)
+                if tag.get('name', '') and all(c in '0123456789.' for c in tag.get('name', ''))
             ]
             if valid_tags:
                 return max(valid_tags, key=parse_version)
