@@ -49,9 +49,9 @@ async def fetch_channel_version(client: httpx.AsyncClient, channel: str) -> str:
         app.logger.error(f"Channel API error for {channel}: {e}")
         return "upstream server issue"
 
-async def fetch_dockerhub_tags(client: httpx.AsyncClient, repo: str, name_filter: str = "version") -> str:
-    """Fetch the highest version tag from Docker Hub for a given repository, excluding tags containing 'EA', 'ppc', 'dev', or 'beta'."""
-    url = f"https://hub.docker.com/v2/repositories/{repo}/tags?name={name_filter}&page_size=100"
+async def fetch_dockerhub_tags(client: httpx.AsyncClient, repo: str) -> str:
+    """Fetch the highest version tag from Docker Hub for a given repository."""
+    url = f"https://hub.docker.com/v2/repositories/{repo}/tags?page_size=100"
 
     def parse_version(tag_name: str) -> tuple:
         """Parse a version string into a tuple of integers for comparison."""
@@ -72,7 +72,6 @@ async def fetch_dockerhub_tags(client: httpx.AsyncClient, repo: str, name_filter
                 if tag.get('name', '')
                 and '.' in tag.get('name', '')
                 and all(c in '0123456789.' for c in tag.get('name', ''))
-                and tag.get('name', '').startswith(name_filter)
             ]
             if valid_tags:
                 return max(valid_tags, key=parse_version)
@@ -95,10 +94,10 @@ async def get_versions_async() -> Dict[str, str]:
         "cert-manager": ("github", "cert-manager/cert-manager"),
         "harvester": ("github", "harvester/harvester"),
         "hauler": ("github", "hauler-dev/hauler"),
-        "portworx": ("dockerhub", "portworx/px-pure-csi-driver", {"name_filter": "25"}),
-        "px_oper": ("dockerhub", "portworx/px-operator", {"name_filter": "25"}),
-        "stork": ("dockerhub", "openstorage/stork", {"name_filter": "25"}),
-        "pxenterprise": ("dockerhub", "portworx/px-enterprise", {"name_filter": "3"}),
+        "portworx": ("dockerhub", "portworx/px-pure-csi-driver"),
+        "px_oper": ("dockerhub", "portworx/px-operator"),
+        "stork": ("dockerhub", "openstorage/stork"),
+        "pxenterprise": ("dockerhub", "portworx/px-enterprise"),
     }
 
     async with httpx.AsyncClient(headers=HEADERS) as client:
